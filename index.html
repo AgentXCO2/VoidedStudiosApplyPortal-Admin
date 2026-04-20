@@ -27,7 +27,7 @@ gap:10px;
 }
 
 .card{
-width:420px;
+width:500px;
 background:#0f0f14;
 border:1px solid #222;
 padding:15px;
@@ -74,12 +74,10 @@ border:1px solid #222;
 
 <div class="panel">
 
-<button onclick="googleLogin()">Login with Google</button>
-
-<div class="card">
 <input id="pass" type="password" placeholder="Admin Password">
 <button onclick="unlock()">Unlock Panel</button>
-</div>
+
+<button onclick="googleLogin()">Login with Google</button>
 
 <div id="apps"></div>
 
@@ -102,7 +100,7 @@ signInWithPopup,
 GoogleAuthProvider
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-/* FIREBASE CONFIG */
+/* FIREBASE */
 const firebaseConfig = {
 apiKey: "AIzaSyCic_ne2ZWsYZeTFX-2fJPCcFXJlqzLEW4",
 authDomain: "voided-studios-apply-portal.firebaseapp.com",
@@ -130,15 +128,11 @@ render();
 
 /* GOOGLE LOGIN */
 window.googleLogin = async function(){
-try{
 await signInWithPopup(auth, provider);
 alert("Google login successful");
-}catch(e){
-alert(e.message);
-}
 };
 
-/* UNLOCK PANEL */
+/* UNLOCK */
 window.unlock = function(){
 
 const val = document.getElementById("pass").value;
@@ -153,7 +147,7 @@ alert("Wrong Password");
 
 };
 
-/* RENDER */
+/* FULL RENDER (ALL FIELDS) */
 function render(){
 
 const box = document.getElementById("apps");
@@ -165,8 +159,15 @@ return;
 
 box.innerHTML = applications.map(a=>`
 <div class="app">
+
 <b>Name:</b> ${a.realname || "N/A"}<br>
+<b>Roblox:</b> ${a.roblox || "N/A"}<br>
+<b>Discord:</b> ${a.discord || "N/A"}<br>
+<b>X:</b> ${a.x || "N/A"}<br>
+<b>Email:</b> ${a.email || "N/A"}<br>
 <b>Role:</b> ${a.role || "N/A"}<br>
+<b>Reason:</b> ${a.reason || "N/A"}<br>
+<b>Extra:</b> ${a.extra || "N/A"}<br>
 <b>Status:</b> ${a.status || "Pending"}<br>
 
 ${unlocked ? `
@@ -179,7 +180,7 @@ ${unlocked ? `
 
 }
 
-/* UPDATE STATUS */
+/* STATUS UPDATE */
 window.setStatus = async function(id,status){
 await updateDoc(doc(db,"applications",id),{status});
 };
