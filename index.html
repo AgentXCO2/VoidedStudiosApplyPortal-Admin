@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Voided Admin Panel</title>
+
+<style>
+body{
+margin:0;
+font-family:monospace;
+background:#050507;
+color:white;
+}
+
+header{
+padding:15px;
+border-bottom:1px solid #222;
+text-align:center;
+}
+
+.panel{
+padding:20px;
+display:flex;
+flex-direction:column;
+align-items:center;
+}
+
+.card{
+background:#0f0f14;
+border:1px solid #222;
+padding:15px;
+border-radius:10px;
+width:420px;
+margin-top:10px;
+}
+
+input{
+width:100%;
+padding:10px;
+margin:6px 0;
+background:#000;
+border:1px solid #333;
+color:white;
+border-radius:6px;
+}
+
+button{
+width:100%;
+padding:10px;
+margin-top:8px;
+background:#7c3aed;
+border:none;
+color:white;
+border-radius:6px;
+cursor:pointer;
+}
+
+.app{
+background:#111;
+padding:10px;
+border-radius:8px;
+margin-top:10px;
+border:1px solid #222;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h2>VOIDED STUDIOS // ADMIN</h2>
+</header>
+
+<div class="panel">
+
+<button onclick="googleLogin()">Login with Google</button>
+
+<div class="card" id="pwBox" style="display:none;">
+<input id="adminPass" type="password" placeholder="Enter Admin Password">
+<button onclick="checkPassword()">Unlock Panel</button>
+</div>
+
+<div id="apps"></div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {
+getFirestore,
+collection,
+onSnapshot,
+updateDoc,
+doc
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+import {
+getAuth,
+signInWithPopup,
+GoogleAuthProvider,
+onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyCic_ne2ZWsYZeTFX-2fJPCcFXJlqzLEW4",
+authDomain: "voided-studios-apply-portal.firebaseapp.com",
+projectId: "voided-studios-apply-portal"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth();
+const provider = new GoogleAuthProvider();
+
+let unlocked = false;
+
+const ADMIN_PASSWORD = "VoidedStudios.Agent";
+
+window.googleLogin = async function(){
+await signInWithPopup(auth, provider);
+document.getElementById("pwBox").style.display = "block";
+}
+
+window.checkPassword = function(){
+if(adminPass.value === ADMIN_PASSWORD){
+unlocked = true;
+loadApps();
+}else{
+alert("Wrong password");
+}
+}
+
+function loadApps(){
+
+onSnapshot(collection(db,"applications"), (snap)=>{
+
+if(!unlocked) return;
+
+const apps = snap.docs.map(d => ({id:d.id,...d.data()}));
+
+appsDiv.innerHTML = apps.map(a=>`
+<div class="app">
+<b>${a.roblox}</b> (${a.realname})<br>
+Role: ${a.role}<br>
+Status: ${a.status}<br>
+
+<button onclick="setStatus('${a.id}','accepted')">Accept</button>
+<button onclick="setStatus('${a.id}','declined')">Decline</button>
+</div>
+`).join("");
+
+});
+
+}
+
+window.setStatus = async function(id,status){
+await updateDoc(doc(db,"applications",id),{status});
+}
+
+</script>
+
+<div id="apps"></div>
+
+</body>
+</html>
