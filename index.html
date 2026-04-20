@@ -160,15 +160,17 @@ return;
 box.innerHTML = applications.map(a=>`
 <div class="app">
 
-<b>Name:</b> ${a.realname || "N/A"}<br>
-<b>Roblox:</b> ${a.roblox || "N/A"}<br>
-<b>Discord:</b> ${a.discord || "N/A"}<br>
-<b>X:</b> ${a.x || "N/A"}<br>
-<b>Email:</b> ${a.email || "N/A"}<br>
-<b>Role:</b> ${a.role || "N/A"}<br>
-<b>Reason:</b> ${a.reason || "N/A"}<br>
-<b>Extra:</b> ${a.extra || "N/A"}<br>
-<b>Status:</b> ${a.status || "Pending"}<br>
+<b>Real Name:</b> ${a.realname}<br>
+<b>Roblox:</b> ${a.roblox}<br>
+<b>Discord:</b> ${a.discord}<br>
+<b>Email:</b> ${a.email}<br>
+<b>X:</b> ${a.x}<br>
+
+<b>Role:</b> ${a.role}<br>
+<b>Reason:</b> ${a.reason}<br>
+<b>Extra:</b> ${a.extra}<br>
+
+<b>Status:</b> ${a.status}<br>
 
 ${unlocked ? `
 <button onclick="setStatus('${a.id}','accepted')">Accept</button>
