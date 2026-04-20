@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Voided Admin Panel</title>
+<title>Voided Studios Admin Panel</title>
 
 <style>
 body{
@@ -27,11 +27,11 @@ gap:10px;
 }
 
 .card{
+width:420px;
 background:#0f0f14;
 border:1px solid #222;
 padding:15px;
 border-radius:10px;
-width:420px;
 }
 
 input{
@@ -69,7 +69,7 @@ border:1px solid #222;
 <body>
 
 <header>
-<h2>VOIDED STUDIOS // ADMIN PANEL</h2>
+<h2>VOIDED STUDIOS ADMIN PANEL</h2>
 </header>
 
 <div class="panel">
@@ -77,7 +77,7 @@ border:1px solid #222;
 <button onclick="googleLogin()">Login with Google</button>
 
 <div class="card">
-<input id="adminPass" type="password" placeholder="Enter Admin Password">
+<input id="pass" type="password" placeholder="Admin Password">
 <button onclick="unlock()">Unlock Panel</button>
 </div>
 
@@ -112,23 +112,19 @@ messagingSenderId: "385790292991",
 appId: "1:385790292991:web:a4a10cb5781c107151adca"
 };
 
-/* INIT */
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth();
 const provider = new GoogleAuthProvider();
 
-/* STATE */
 const ADMIN_PASSWORD = "VoidedStudios.Agent";
+
 let unlocked = false;
 let applications = [];
 
-/* FIRESTORE LIVE LISTENER */
+/* LIVE FIRESTORE */
 onSnapshot(collection(db,"applications"), (snap)=>{
-applications = snap.docs.map(d => ({
-id: d.id,
-...d.data()
-}));
+applications = snap.docs.map(d => ({id:d.id, ...d.data()}));
 render();
 });
 
@@ -136,48 +132,42 @@ render();
 window.googleLogin = async function(){
 try{
 await signInWithPopup(auth, provider);
-alert("Google Login Successful");
+alert("Google login successful");
 }catch(e){
-alert("Login Failed: " + e.message);
+alert(e.message);
 }
 };
 
 /* UNLOCK PANEL */
 window.unlock = function(){
 
-const pass = document.getElementById("adminPass").value;
+const val = document.getElementById("pass").value;
 
-if(pass === ADMIN_PASSWORD){
+if(val === ADMIN_PASSWORD){
 unlocked = true;
-alert("Panel Unlocked");
 render();
+alert("Panel Unlocked");
 }else{
 alert("Wrong Password");
 }
 
 };
 
-/* SAFE RENDER (FIXED) */
+/* RENDER */
 function render(){
 
 const box = document.getElementById("apps");
 
 if(!applications.length){
-box.innerHTML = "<p>No applications found.</p>";
+box.innerHTML = "<p>No applications yet</p>";
 return;
 }
 
-box.innerHTML = applications.map(a=>{
-
-const name = a.realname ?? "Unknown";
-const role = a.role ?? "No Role";
-const status = a.status ?? "Pending";
-
-return `
+box.innerHTML = applications.map(a=>`
 <div class="app">
-<b>Name:</b> ${name}<br>
-<b>Role:</b> ${role}<br>
-<b>Status:</b> ${status}<br>
+<b>Name:</b> ${a.realname || "N/A"}<br>
+<b>Role:</b> ${a.role || "N/A"}<br>
+<b>Status:</b> ${a.status || "Pending"}<br>
 
 ${unlocked ? `
 <button onclick="setStatus('${a.id}','accepted')">Accept</button>
@@ -185,17 +175,13 @@ ${unlocked ? `
 ` : `<small>Locked</small>`}
 
 </div>
-`;
-
-}).join("");
+`).join("");
 
 }
 
 /* UPDATE STATUS */
 window.setStatus = async function(id,status){
-await updateDoc(doc(db,"applications",id),{
-status: status
-});
+await updateDoc(doc(db,"applications",id),{status});
 };
 
 </script>
