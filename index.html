@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Voided Studios Admin Panel</title>
+<title>Voided Admin Panel</title>
 
 <style>
 body{
@@ -16,7 +16,6 @@ header{
 padding:15px;
 text-align:center;
 border-bottom:1px solid #222;
-letter-spacing:2px;
 }
 
 .panel{
@@ -55,11 +54,6 @@ border:none;
 color:white;
 border-radius:6px;
 cursor:pointer;
-font-family:monospace;
-}
-
-button:hover{
-background:#6d28d9;
 }
 
 .app{
@@ -129,9 +123,12 @@ const ADMIN_PASSWORD = "VoidedStudios.Agent";
 let unlocked = false;
 let applications = [];
 
-/* FIRESTORE LISTENER */
+/* FIRESTORE LIVE LISTENER */
 onSnapshot(collection(db,"applications"), (snap)=>{
-applications = snap.docs.map(d => ({id:d.id,...d.data()}));
+applications = snap.docs.map(d => ({
+id: d.id,
+...d.data()
+}));
 render();
 });
 
@@ -160,32 +157,45 @@ alert("Wrong Password");
 
 };
 
-/* RENDER UI */
+/* SAFE RENDER (FIXED) */
 function render(){
 
 const box = document.getElementById("apps");
 
-if(!unlocked){
-box.innerHTML = "<p>Locked. Enter password to view applications.</p>";
+if(!applications.length){
+box.innerHTML = "<p>No applications found.</p>";
 return;
 }
 
-box.innerHTML = applications.map(a=>`
-<div class="app">
-<b>${a.roblox}</b> (${a.realname})<br>
-Role: ${a.role}<br>
-Status: ${a.status}<br>
+box.innerHTML = applications.map(a=>{
 
+const name = a.realname ?? "Unknown";
+const role = a.role ?? "No Role";
+const status = a.status ?? "Pending";
+
+return `
+<div class="app">
+<b>Name:</b> ${name}<br>
+<b>Role:</b> ${role}<br>
+<b>Status:</b> ${status}<br>
+
+${unlocked ? `
 <button onclick="setStatus('${a.id}','accepted')">Accept</button>
 <button onclick="setStatus('${a.id}','declined')">Decline</button>
+` : `<small>Locked</small>`}
+
 </div>
-`).join("");
+`;
+
+}).join("");
 
 }
 
 /* UPDATE STATUS */
 window.setStatus = async function(id,status){
-await updateDoc(doc(db,"applications",id),{status});
+await updateDoc(doc(db,"applications",id),{
+status: status
+});
 };
 
 </script>
