@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Voided Studios Admin</title>
+<title>Voided Studios Admin Panel</title>
 
 <style>
 body{
@@ -16,6 +16,7 @@ header{
 padding:15px;
 text-align:center;
 border-bottom:1px solid #222;
+letter-spacing:2px;
 }
 
 .panel{
@@ -23,6 +24,7 @@ display:flex;
 flex-direction:column;
 align-items:center;
 padding:20px;
+gap:10px;
 }
 
 .card{
@@ -31,7 +33,6 @@ border:1px solid #222;
 padding:15px;
 border-radius:10px;
 width:420px;
-margin-top:10px;
 }
 
 input{
@@ -42,6 +43,7 @@ background:#000;
 border:1px solid #333;
 color:white;
 border-radius:6px;
+font-family:monospace;
 }
 
 button{
@@ -53,6 +55,11 @@ border:none;
 color:white;
 border-radius:6px;
 cursor:pointer;
+font-family:monospace;
+}
+
+button:hover{
+background:#6d28d9;
 }
 
 .app{
@@ -84,7 +91,6 @@ border:1px solid #222;
 
 </div>
 
-<!-- FIREBASE CDN (IMPORTANT FIX) -->
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
@@ -112,14 +118,22 @@ messagingSenderId: "385790292991",
 appId: "1:385790292991:web:a4a10cb5781c107151adca"
 };
 
+/* INIT */
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth();
 const provider = new GoogleAuthProvider();
 
-let unlocked = false;
-
+/* STATE */
 const ADMIN_PASSWORD = "VoidedStudios.Agent";
+let unlocked = false;
+let applications = [];
+
+/* FIRESTORE LISTENER */
+onSnapshot(collection(db,"applications"), (snap)=>{
+applications = snap.docs.map(d => ({id:d.id,...d.data()}));
+render();
+});
 
 /* GOOGLE LOGIN */
 window.googleLogin = async function(){
@@ -127,35 +141,36 @@ try{
 await signInWithPopup(auth, provider);
 alert("Google Login Successful");
 }catch(e){
-alert("Login failed: " + e.message);
+alert("Login Failed: " + e.message);
 }
-}
+};
 
-/* FIXED UNLOCK FUNCTION */
+/* UNLOCK PANEL */
 window.unlock = function(){
 
-const input = document.getElementById("adminPass").value;
+const pass = document.getElementById("adminPass").value;
 
-if(input === ADMIN_PASSWORD){
+if(pass === ADMIN_PASSWORD){
 unlocked = true;
-loadApps();
 alert("Panel Unlocked");
+render();
 }else{
 alert("Wrong Password");
 }
 
+};
+
+/* RENDER UI */
+function render(){
+
+const box = document.getElementById("apps");
+
+if(!unlocked){
+box.innerHTML = "<p>Locked. Enter password to view applications.</p>";
+return;
 }
 
-/* LOAD APPLICATIONS */
-function loadApps(){
-
-onSnapshot(collection(db,"applications"), (snap)=>{
-
-if(!unlocked) return;
-
-const apps = snap.docs.map(d => ({id:d.id,...d.data()}));
-
-document.getElementById("apps").innerHTML = apps.map(a=>`
+box.innerHTML = applications.map(a=>`
 <div class="app">
 <b>${a.roblox}</b> (${a.realname})<br>
 Role: ${a.role}<br>
@@ -166,14 +181,12 @@ Status: ${a.status}<br>
 </div>
 `).join("");
 
-});
-
 }
 
 /* UPDATE STATUS */
 window.setStatus = async function(id,status){
 await updateDoc(doc(db,"applications",id),{status});
-}
+};
 
 </script>
 
